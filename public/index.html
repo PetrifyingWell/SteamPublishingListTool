@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Steam Publishing List Tool</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Steam Publishing List Tool</h1>
+    <p class="subtitle">Newly-appeared, unreleased Steam store pages for publishing outreach.</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="new">New</button>
+    <button class="tab-btn" data-tab="shortlist">Shortlist</button>
+    <button class="tab-btn" data-tab="history">History</button>
+  </nav>
+
+  <form id="filters">
+    <div class="field tag-field">
+      <label for="tagInput">Steam tags</label>
+      <input type="text" id="tagInput" autocomplete="off" placeholder="Start typing a tag, e.g. Roguelike" />
+      <div id="tagSuggestions" class="tag-suggestions" hidden></div>
+      <div id="selectedTags" class="tag-chips"></div>
+    </div>
+
+    <div class="field">
+      <label for="term">Search term</label>
+      <input type="text" id="term" name="term" placeholder="optional keyword" />
+    </div>
+
+    <button type="submit" id="refreshBtn">Refresh</button>
+  </form>
+
+  <div id="status"></div>
+
+  <div id="results"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
