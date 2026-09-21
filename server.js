@@ -188,9 +188,37 @@ async function fetchStoreTags(appid) {
   }
 }
 
+// Steam's official content-descriptor ids for nudity/sexual content
+// specifically (not the violence/gore or general-mature ones, which aren't
+// what "NSFW" means here). Used as a best-effort signal alongside the
+// human-readable text below, since relying on numeric ids alone risks a
+// silent miss if a title only carries this info in words, not the id list.
+const NSFW_CONTENT_DESCRIPTOR_IDS = new Set([1, 3, 4]);
+const NSFW_KEYWORDS = ['nudity', 'sexual content', 'nsfw', 'hentai'];
+
+function containsNsfwKeyword(text) {
+  const lower = text.toLowerCase();
+  return NSFW_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
+function isNsfw(details, tags) {
+  const descriptorIds = (details.content_descriptors && details.content_descriptors.ids) || [];
+  if (descriptorIds.some((id) => NSFW_CONTENT_DESCRIPTOR_IDS.has(id))) return true;
+
+  const notes = (details.content_descriptors && details.content_descriptors.notes) || '';
+  if (notes && containsNsfwKeyword(notes)) return true;
+
+  const genreNames = (details.genres || []).map((g) => g.description || '');
+  if (genreNames.some(containsNsfwKeyword)) return true;
+
+  return (tags || []).some(containsNsfwKeyword);
+}
+
 // Classifies a newly-diffed appid: is it a real, unreleased game, and if so
 // what does its store page actually say. Returns null for anything else
-// (DLC, software, demos, already-released games, unpublished/removed apps).
+// (DLC, software, demos, already-released games, unpublished/removed apps,
+// or NSFW content - this tool is meant for publishing outreach, not adult
+// content scouting).
 async function classifyAppId(appid) {
   const details = await fetchAppDetails(appid);
   if (!details) return null;
@@ -198,6 +226,7 @@ async function classifyAppId(appid) {
   if (!details.release_date || details.release_date.coming_soon !== true) return null;
 
   const tags = await fetchStoreTags(appid);
+  if (isNsfw(details, tags)) return null;
 
   return {
     name: details.name,
